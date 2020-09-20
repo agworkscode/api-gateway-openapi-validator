@@ -174,17 +174,28 @@ module.exports = class OpenApiValidator {
                 headers: event.headers || {},
                 params: event.pathParameters || {},
             };
+            // RFC requires header parameters to have case insensitive names. In order to support this
+            // AJV converts all header property names to lower case and compares with lower case. So
+            // convert the request proprty names to lowercase in order to accomodate.
+            Object.keys(event.headers || {}).forEach(function(key){
+                request.headers[key.toLowerCase()] = event.headers[key];
+            });
             requestValidator.validate(path, request);
 
             // @NOTE: ajv validator replaces the request with the sanitized data
-
             // Replace the request properties with the values after validation to ensure that the values are filtered
-            return {
+            // At the same time return to original case for header parameters.
+            let filtered = {
                 body: request.body,
                 queryStringParams: request.query,
                 headers: request.headers,
                 pathParameters: request.params,
             };
+            Object.keys(event.headers || {}).forEach(function(key){
+                if (request.headers[key.toLowerCase()]) filtered.headers[key] = request.headers[key.toLowerCase()];
+            });
+
+            return filtered;
         }
     }
 
