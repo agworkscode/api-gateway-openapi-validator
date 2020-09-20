@@ -138,13 +138,23 @@ module.exports = class OpenApiValidator {
                     // Replace the content of the response by filtering based on the documentation
                     Object.assign(response, { body: converted ? JSON.stringify(filteredResponse) : filteredResponse });
                 }
-                
-                callback(null, response);
+                // Allow for AWS v1 or v2 return form
+                if (callback) {
+                    callback(null, response);
+                } else {
+                    return response;
+                }
             } catch (error) {
-                callback(null, {
+                // Allow for AWS v1 or v2 return form
+                let response = {
                     body: JSON.stringify({ message: error.message }),
-                    statusCode: error.statusCode || 500,
-                });
+                    statusCode: error.statusCode || 500
+                };
+                if (callback) {
+                    callback(null, response);
+                } else {
+                    return response;
+                }
             }
 
         }
