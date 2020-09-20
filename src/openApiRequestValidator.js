@@ -97,7 +97,8 @@ module.exports = class RequestValidator {
             const message = this._ajv.errorsText(errors, {
                 dataVar: 'request',
             });
-            throw new ValidationError(message, 415);
+            // RFC specifies 400 for validation errors
+            throw new ValidationError(message, 400);
         }
         return request;
     }
