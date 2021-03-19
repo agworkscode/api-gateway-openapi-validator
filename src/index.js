@@ -166,6 +166,7 @@ module.exports = class OpenApiValidator {
                 this.apiSpec,
                 {
                     removeAdditional: this.removeAdditionalRequestProps,
+                    nullable: true
                 },
                 schema);
             const request = {
