@@ -27,6 +27,7 @@ module.exports = class OpenApiValidator {
         this.roleAuthorizerKey = params.roleAuthorizerKey || null;
         this.filterByRole = params.filterByRole || false;
         this.defaultRoleName = params.defaultRoleName || 'default';
+        this.AJVoptions = params.defaultRoleName || { };
         this.config = {};
         this.lambdaBody = lambdaBody;
     }
@@ -72,7 +73,7 @@ module.exports = class OpenApiValidator {
                 
                 // Validate Requests
                 if (this.validateRequests) {
-                    const filteredRequest = this._validateRequests(path, this.event, this.config);
+                    const filteredRequest = this._validateRequests(path, this.event, this.config, this.AJVoptions);
                     
                     // Replace the properties of the event with the filtered ones (body, queryParams, pathParams)
                     Object.assign(this.event, filteredRequest);
@@ -131,9 +132,9 @@ module.exports = class OpenApiValidator {
                         // Get role for requestContenxt > authorizer > roleKey
                         // if it doesn't exist for the user, use the default role
                         const role = get(event, `requestContext.authorizer.claims.${this.roleAuthorizerKey}`, event.requestContext.authorizer.claims[this.defaultRoleName]);
-                        filteredResponse = this._validateResponses(path, responseToValidate, this.config, statusCode, role);
+                        filteredResponse = this._validateResponses(path, responseToValidate, this.config, statusCode, this.AJVoptions, role);
                     } else {
-                        filteredResponse = this._validateResponses(path, responseToValidate, this.config, statusCode);
+                        filteredResponse = this._validateResponses(path, responseToValidate, this.config, statusCode, this.AJVoptions);
                     }
                     // Replace the content of the response by filtering based on the documentation
                     Object.assign(response, { body: converted ? JSON.stringify(filteredResponse) : filteredResponse });
@@ -160,15 +161,10 @@ module.exports = class OpenApiValidator {
         }
     }
 
-    _validateRequests (path, event, schema) {
+    _validateRequests (path, event, schema, AJVoptions) {
         if (schema) {
-            const requestValidator = new RequestValidator(
-                this.apiSpec,
-                {
-                    removeAdditional: this.removeAdditionalRequestProps,
-                    nullable: true
-                },
-                schema);
+            AJVoptions.removeAdditional = this.removeAdditionalRequestProps;
+            const requestValidator = new RequestValidator(this.apiSpec, AJVoptions, schema);
             const request = {
                 body: event.body || {},
                 query: event.queryStringParameters || {},
@@ -200,15 +196,10 @@ module.exports = class OpenApiValidator {
         }
     }
 
-    _validateResponses (path, response, schema, statusCode, role = null) {
+    _validateResponses (path, response, schema, statusCode, AJVoptions, role = null) {
         if (schema) {
-            const responseValidator = new ResponseValidator(
-                this.apiSpec,
-                {
-                    removeAdditional: this.removeAdditionalResponseProps,
-                },
-                schema,
-                role);
+            AJVoptions.removeAdditional = this.removeAdditionalResponseProps;
+            const responseValidator = new ResponseValidator(this.apiSpec, AJVoptions, schema, role);
             responseValidator.validate(path, response, statusCode);
 
         }
