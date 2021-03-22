@@ -27,7 +27,7 @@ module.exports = class OpenApiValidator {
         this.roleAuthorizerKey = params.roleAuthorizerKey || null;
         this.filterByRole = params.filterByRole || false;
         this.defaultRoleName = params.defaultRoleName || 'default';
-        this.AJVoptions = params.defaultRoleName || { };
+        this.AJVoptions = params.AJVoptions || {};
         this.config = {};
         this.lambdaBody = lambdaBody;
     }
