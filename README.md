@@ -113,3 +113,4 @@ You can try out the example implementation of the validator locally by reading t
 Validation of the apiSpec is an important step for the security of our apis but increases the response time of the lambda execution significantly. As such, document validation was removed from the functional execution of the library, but code still exist to help with validating the input. If document validation is important to your use case, feel free to fork this project and use the code here: [./src/openApiLoader](./src/openApiLoader) to extend [./src/index.js](./src/index.js).
 
 This step was added to the build step of our external projects to ensure that the schema used were always validated and could be replicated for similar projects while reducing the need to validate the documentation on lambda invocation.
+
